@@ -15,7 +15,14 @@ void ofApp::setup(){
     //VideoGrabberの初期化
     video.initGrabber(640, 480);
     video.setDeviceID(1);
-
+    
+    //エネルギーの初期半径
+    radius = 0;
+    
+    //Phaseの初期値をFalseに
+    phase0 = true;
+    phase1 = false;
+    phase2 = false;
 }
 
 //--------------------------------------------------------------
@@ -55,7 +62,7 @@ void ofApp::update(){
                 b = pix[int((i + colorImage.getWidth() * j) * 3) + 2];
                 
                 //黒色か識別する
-                if (r < 30 && g < 30 && b < 30) {
+                if (r < 230 && r > 180 && g < 120 && r > 80 && b < 120 && b > 80) {
                     //X, Y座標を配列に入れる
                     x_group.push_back(i);
                     y_group.push_back(j);
@@ -73,10 +80,51 @@ void ofApp::update(){
                 x_sum += x_group[i];
                 y_sum += y_group[i];
             }
+            //全開の値を入力
+            x_pre = x;
+            y_pre = y;
+            
             //平均を取得する
             x = (x_sum/x_group.size());
             y = (y_sum/y_group.size());
+            
+            //加速度を代入
+            accelerat = sqrt(( x - x_pre ) * ( x - x_pre ) + ( y - y_pre ) * ( y - y_pre ));
         }
+    }
+    
+    
+    //各Phaseに関する処理
+    //Phase0であまり動いてない時
+    if (phase0 && accelerat < 5) {
+        //Phase0カウントを追加する
+        phase0_count++;
+        
+        //Phase0カウントが溜まったら次のPhaseに移行する
+        if (phase0_count > 100) {
+            phase0_count = 0;
+            phase0 = false;
+            phase1 = true;
+        }
+    //Phase1のとき
+    }else if (phase1){
+        //Phase1カウントを追加
+        phase1_count++;
+        //エネルギー球の大きさを拡大
+        radius += 0.1f;
+        
+        //急加速した時
+        if (accelerat > 80 && radius > 50) {
+            phase1_count = 0;
+            phase1 = false;
+            phase2 = true;
+        }
+        
+    //Phase2のとき
+    }else if (phase2){
+        //Phase2のカウント追加
+        phase2_count++;
+        
     }
     
 }
@@ -87,9 +135,20 @@ void ofApp::draw(){
     //Video描画
     ofSetColor(255, 255, 255);
     video.draw(0, 0);
+    
+    //色の変更
     ofSetColor(255, 100, 100);
-    ofCircle(x, y, 100);
-    ofDrawBitmapString("X" + ofToString(x) + ", Y" + ofToString(y) , 20, 20);
+    
+    //中心に円を描写
+    ofCircle(x, y, radius);
+
+    //Phase2のとき
+    if (phase2) {
+        ofRect(x, (y - radius), ofGetWidth(), radius*2);
+    }
+    
+    //値の出力
+    ofDrawBitmapString("X" + ofToString(x) + ", Y" + ofToString(y) + ", AC" + ofToString(accelerat) , 20, 20);
     
 }
 

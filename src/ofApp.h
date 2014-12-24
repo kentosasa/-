@@ -30,5 +30,25 @@ class ofApp : public ofBaseApp{
     int x;
     int y;
 
+    //全開の黒色オブジェクトの座標の中心
+    int x_pre;
+    int y_pre;
+
+    //加速度
+    long accelerat;
     
+    //エネルギー球の半径
+    double radius;
+    
+    //phase0初期状態　赤い物体が存在し、わちゃわちゃ動いている
+    bool phase0;
+    int phase0_count;
+    
+    //Phase1　赤い物体が存在し、動かないでエネルギーチャージ
+    bool phase1;
+    int phase1_count;
+    
+    //Phase2 物体が急加速した時
+    bool phase2;
+    int phase2_count;
 };
